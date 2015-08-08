@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+  "name": "rot13",
+  "version": "0.0.1",
+
+  "description": "rot13 for Twitter",
+
+  "author": "@zip",
+
+  "permissions": [
+    "https://twitter.com/"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*"],
+      "css": ["style.css"],
+      "js": ["content.js"]
+    }
+  ]
+}
