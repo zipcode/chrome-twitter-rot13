@@ -1,21 +1,11 @@
 "use strict";
 
 (function () {
-  var mutationObserver = new MutationObserver(
-    function observerCallback(mutationRecords, mutationObserver) {
-      mutationRecords.forEach(function (mutationRecord) {
-        for (var i = 0; i < mutationRecord.addedNodes.length; i++) {
-          var node = mutationRecord.addedNodes[i];
-          rot13tweets(node.querySelectorAll(".tweet"));
-        }
-      });
-    }
-  );
+  var selector = ".js-actionable-tweet";
 
-  // Observe the (first) twitter stream on the page
-  mutationObserver.observe(document.querySelector(".stream > .stream-items"), {
-    childList: true
-  });
+  function arr(arrLike) {
+    return Array.prototype.slice.call(arrLike);
+  }
 
   function rot13text(text) {
     return text.replace(/[a-z]/g, function (c) {
@@ -29,8 +19,7 @@
 
   function rot13node(node) {
     var clone = node.cloneNode(true);
-    for (var i = 0; i < clone.childNodes.length; i++) {
-      var element = clone.childNodes[i];
+    for (let element of arr(clone.childNodes)) {
       if (element.nodeType == Node.TEXT_NODE) {
         clone.replaceChild(new Text(rot13text(element.textContent)), element);
         clone.classList.add("rot13");
@@ -40,12 +29,7 @@
   }
 
   function rot13tweets(tweets) {
-    for (var j = 0; j < tweets.length; j++) {
-      var tweet = tweets[j];
-      if (tweet) {
-        rot13tweet(tweet);
-      }
-    };
+    for (let tweet of arr(tweets)) { rot13tweet(tweet); }
   }
 
   function rot13tweet(tweet) {
@@ -55,6 +39,20 @@
     text.parentNode.insertBefore(augment, text.nextSibling);
   }
 
+  // Get everything not already on display
+  var mutationObserver = new MutationObserver((mutationRecords, mutationObserver) => {
+    for (let mutationRecord of mutationRecords) {
+      for (let node of arr(mutationRecord.addedNodes)) {
+        rot13tweets(node.querySelectorAll(selector));
+      }
+    }
+  });
+
+  // Observe the (first) twitter stream on the page
+  mutationObserver.observe(document.querySelector(".stream > .stream-items"), {
+    childList: true
+  });
+
   // Get everything already on display
-  rot13tweets(document.querySelectorAll(".tweet"));
+  rot13tweets(document.querySelectorAll(selector));
 }).call(this);
