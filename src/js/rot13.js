@@ -1,4 +1,3 @@
-"use strict";
 module.exports = (() => {
   function rotate(a) {
     let aPoint = a.codePointAt(0);
@@ -11,7 +10,16 @@ module.exports = (() => {
     return text.replace(/[A-Z]/g, rotate("A")).replace(/[a-z]/g, rotate("a"));
   }
 
+  function attach(tweet) {
+    let state = false;
+    tweet.addButton("rot13", () => {
+      state = !state;
+      tweet.element.querySelector(".tweet-text").style.backgroundColor = state ? "green" : "initial";
+      console.log("Click!");
+    });
+  }
+
   return {
-    rot13
+    attach
   };
 })();
