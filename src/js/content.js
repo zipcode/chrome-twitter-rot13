@@ -1,58 +1,48 @@
 "use strict";
 
 (function () {
-  var selector = ".js-actionable-tweet";
+  const DEBUG = true;
 
-  function arr(arrLike) {
-    return Array.prototype.slice.call(arrLike);
+  if (DEBUG) {
+    // Twitter likes to remove this
+    delete window.console;
   }
 
-  function rot13text(text) {
-    return text.replace(/[a-z]/g, function (c) {
-      var a = "a".charCodeAt(0);
-      return String.fromCharCode((c.charCodeAt(0) - a + 13) % 26 + a);
-    }).replace(/[A-Z]/g, function (c) {
-      var a = "A".charCodeAt(0);
-      return String.fromCharCode((c.charCodeAt(0) - a + 13) % 26 + a);
-    });
-  }
+  let rootNode = document.querySelector(".stream > .stream-items");
+  let selector = ".js-actionable-tweet";
 
-  function rot13node(node) {
-    var clone = node.cloneNode(true);
-    for (let element of arr(clone.childNodes)) {
-      if (element.nodeType == Node.TEXT_NODE) {
-        clone.replaceChild(new Text(rot13text(element.textContent)), element);
-        clone.classList.add("rot13");
-      }
-    };
-    return clone;
-  }
+  let NodeIterator = require("./NodeIterator");
+  let rot13 = require("./rot13");
 
-  function rot13tweets(tweets) {
-    for (let tweet of arr(tweets)) { rot13tweet(tweet); }
-  }
+  class Tweet {
+    constructor(element) {
+      this.element = element;
+      this.element.dataset.zipAugment = "true";
+    }
 
-  function rot13tweet(tweet) {
-    var text = tweet.querySelector(".tweet-text");
-    if (text == null) return;
-    var augment = rot13node(text);
-    text.parentNode.insertBefore(augment, text.nextSibling);
+    static of(element) {
+      return new Tweet(element);
+    }
   }
 
   // Get everything not already on display
   var mutationObserver = new MutationObserver((mutationRecords, mutationObserver) => {
     for (let mutationRecord of mutationRecords) {
-      for (let node of arr(mutationRecord.addedNodes)) {
-        rot13tweets(node.querySelectorAll(selector));
+      for (let node of mutationRecord.addedNodes.iterator) {
+        for (let tweet of node.querySelectorAll(selector).iterator) {
+          Tweet.of(tweet);
+        }
       }
     }
   });
 
   // Observe the (first) twitter stream on the page
-  mutationObserver.observe(document.querySelector(".stream > .stream-items"), {
+  mutationObserver.observe(rootNode, {
     childList: true
   });
 
-  // Get everything already on display
-  rot13tweets(document.querySelectorAll(selector));
+  for (let tweet of rootNode.querySelectorAll(selector).iterator) {
+    Tweet.of(tweet);
+  }
+
 }).call(this);
