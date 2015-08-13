@@ -1,4 +1,4 @@
-module.exports = (function () {
+(function () {
   const DEBUG = true;
 
   if (DEBUG) {
@@ -71,11 +71,5 @@ module.exports = (function () {
 
   for (let tweet of rootNode.querySelectorAll(selector).iterator) {
     Tweet.of(tweet);
-  }
-
-  return {
-    Tweet,
-    NodeIterator,
-    rot13
   }
 }).call(this);
