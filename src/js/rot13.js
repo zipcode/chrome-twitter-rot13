@@ -1,4 +1,6 @@
 module.exports = (() => {
+  let NodeIterator = require("./NodeIterator");
+
   function rotate(a) {
     let aPoint = a.codePointAt(0);
     return function(letter) {
@@ -10,12 +12,29 @@ module.exports = (() => {
     return text.replace(/[A-Z]/g, rotate("A")).replace(/[a-z]/g, rotate("a"));
   }
 
+  function rot13tweet(tweet) {
+    let tweetText = tweet.element.querySelector(".tweet-text");
+    let clone = tweetText.cloneNode(true);
+    for (let node of clone.childNodes.iterator) {
+      if (node.nodeType == Node.TEXT_NODE) {
+        clone.replaceChild(new Text(rot13(node.textContent)), node);
+      }
+    }
+    clone.classList.add("rot13");
+    return clone;
+  }
+
   function attach(tweet) {
-    let state = false;
+    let clone = null;
     tweet.addButton("rot13", () => {
-      state = !state;
-      tweet.element.querySelector(".tweet-text").style.backgroundColor = state ? "green" : "initial";
-      console.log("Click!");
+      let content = tweet.element.querySelector(".content");
+      if (clone) {
+        content.removeChild(clone);
+        clone = null;
+      } else {
+        clone = rot13tweet(tweet);
+        content.insertBefore(clone, tweet.element.querySelector(".tweet-text"));
+      }
     });
   }
 
