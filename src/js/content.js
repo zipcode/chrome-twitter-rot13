@@ -26,9 +26,44 @@
   let rot13 = require("./rot13");
   plugins.register(rot13);
 
-  class Tweet {
+  let Observers = require("./Observers");
+
+  let destructorObserver = Observers.addRemoveObserver(undefined, (node) => {
+    let component = componentRegistry.get(node);
+    if (component && component.cleanup) {
+      component.cleanup();
+    }
+  });
+  destructorObserver.observe(document.body, {subtree: true});
+
+  let componentRegistry = new WeakMap();
+
+  class Component {
     constructor(element) {
+      this.__element = new WeakSet();
+      componentRegistry.set(element, this);
       this.element = element;
+    }
+
+    get element() {
+      for (let element of this.__element) {
+        return element;
+      }
+    }
+
+    set element(value) {
+      this.__element.add(value);
+      return value;
+    }
+
+    cleanup() {
+      console.log("Someone deleted me!", this);
+    }
+  }
+
+  class Tweet extends Component {
+    constructor(element) {
+      super(element);
       this.element.dataset.zipAugment = "true";
       this.buttons = [];
       plugins.attach(this);
@@ -49,27 +84,16 @@
     }
 
     static of(element) {
-      return new Tweet(element);
+      return componentRegistry.get(element) || new Tweet(element);
     }
   }
 
-  // Get everything not already on display
-  var mutationObserver = new MutationObserver((mutationRecords, mutationObserver) => {
-    for (let mutationRecord of mutationRecords) {
-      for (let node of mutationRecord.addedNodes.iterator) {
-        for (let tweet of node.querySelectorAll(selector).iterator) {
-          Tweet.of(tweet);
-        }
-      }
+  class Stream extends Component {
+    static of(element) {
+      return componentRegistry.get(element) || new Stream(element);
     }
-  });
-
-  // Observe the (first) twitter stream on the page
-  mutationObserver.observe(rootNode, {
-    childList: true
-  });
-
-  for (let tweet of rootNode.querySelectorAll(selector).iterator) {
-    Tweet.of(tweet);
   }
+
+  let s = new Stream(document.querySelector(".stream"));
+
 }).call(this);
