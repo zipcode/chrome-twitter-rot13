@@ -6,6 +6,18 @@ var es6ify = require('es6ify');
 
 var production = false;
 
+var mkdirSync = function (path) {
+  try {
+    fs.mkdirSync(path);
+  } catch(e) {
+    if ( e.code != 'EEXIST' ) throw e;
+  }
+}
+
+mkdirSync("dist");
+mkdirSync("dist/js");
+mkdirSync("dist/stylesheets");
+
 var sources = {
   html: ['src/html/*.html'],
   js: ['src/js/*.js'],
