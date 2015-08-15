@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "rot13",
-  "version": "1.0.0",
+  "name": "twitter-rot13",
+  "version": "1.0.1",
 
   "description": "rot13 for Twitter",
 
