@@ -5,3 +5,15 @@
 .tweet .tweet-text.rot13 {
   background-color: #eeeeff;
 }
+
+.js-actionable-tweet:not([data-zip-augment=Tweet]) {
+  border: 2px solid red;
+}
+
+.js-stream-item:not([data-zip-augment=StreamItem]) {
+  border: 2px solid green;
+}
+
+.AppContent:not([data-zip-augment=Stream]) {
+  border: 2px solid blue;
+}
