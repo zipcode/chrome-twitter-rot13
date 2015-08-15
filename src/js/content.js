@@ -28,13 +28,15 @@
       this.detach();
 
       this.getMenu().appendChild(this.li);
-      this.button.addEventListener('click', this.click.bind(this));
+      this.clickBind = this.click.bind(this);
+      this.button.addEventListener('click', this.clickBind);
     },
     detach: function () {
       var rot13 = this.element.closest(".tweet").querySelector(".rot13");
       if (rot13) rot13.remove();
       var li = this.getMenu().querySelector("li.rot13-button");
       if (li) li.remove();
+      this.button.removeEventListener('click', this.clickBind);
     },
     click: function () {
       var rot13elem = this.element.closest(".tweet").querySelector(".rot13");

@@ -1,6 +1,6 @@
 {
   "name": "chrome-rot13",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "rot13 chrome extension",
   "main": "content.js",
   "scripts": {
