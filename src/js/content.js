@@ -7,132 +7,47 @@
     console.log("Loading");
   }
 
-  let rootNode = "AppContent";
-
-  let plugins = {
-    _plugins: new Set(),
-    register(plugin) {
-      this._plugins.add(plugin);
-    },
-    attach(tweet) {
-      for (let plugin of this._plugins) {
-        plugin.attach(tweet);
-      }
-    }
-  }
-
-  let NodeIterator = require("./NodeIterator");
+  let Dancer = require("./dancer");
   let rot13 = require("./rot13");
-  plugins.register(rot13);
 
-  let mappings = {};
-  let componentRegistry = new WeakMap();
-
-  let Observers = require("./Observers");
-
-  function augmentClass(node) {
-    if (!node) return;
-    if (node.nodeType != Node.ELEMENT_NODE) return;
-    for (let name of Object.keys(mappings)) {
-      if (node.classList.contains(name)) {
-        return mappings[name].of(node);
-      }
-    }
-  }
-
-  let observer = Observers.addRemoveObserver(augmentClass, (node) => {
-    let component = componentRegistry.get(node);
-    for (let name of Object.keys(mappings)) {
-      if (node.nodeType != Node.ELEMENT_NODE) return;
-      for (let subnode of node.querySelectorAll(`.${name}`).iterator) {
-        if (componentRegistry.has(subnode)) {
-          componentRegistry.get(subnode).cleanup();
-        }
-      }
-    }
-    if (component && component.cleanup) {
-      component.cleanup();
-    }
-  }, augmentClass);
-  observer.observe(document.body, {subtree: true});
-
-  class Component {
-    constructor(element) {
-      componentRegistry.set(element, this);
-      this.element = element;
-      element.dataset.zipAugment = this.constructor.name;
-      /* Hunt down any nodes to register */
-      for (let name of Object.keys(mappings)) {
-        for (let node of element.querySelectorAll(`.${name}`).iterator) {
-          mappings[name].of(node);
-        }
-      }
-    }
-
-    cleanup() {
-      delete this.element.dataset.zipAugment;
-      componentRegistry.delete(this.element);
-    }
-  }
-
-  class Tweet extends Component {
-    constructor(element) {
-      super(element);
-      this.buttons = [];
-      plugins.attach(this);
-    }
-
-    cleanup() {
-      for (let {name, fn} of this.buttons) {
-        let node = this.element.querySelector(".dropdown-menu > ul > " + `[data-nav="zip-${name}"]`);
-        if (node) node.remove();
-      }
-    }
-
-    addButton(name, onClick) {
-      let existing = this.element.querySelector(".js-more-profileTweet-actions .dropdown-menu > ul > " + `[data-nav="zip-${name}"]`)
-      if (existing) {
-        console.log(`${name} already attached`, existing);
-        existing.removeEventListener("click", onClick);
-        existing.addEventListener("click", onClick);
-        return;
-      }
-
-      this.buttons.push({name, onClick});
-      let li = document.createElement("li");
-      let button = document.createElement("button");
+  Dancer.register("js-more-ProfileTweet-actions", {
+    init: function() {
+      var li = document.createElement("li");
       li.setAttribute("role", "presentation");
-      li.setAttribute("data-nav", "zip-" + name);
-      button.setAttribute("role", "menuitem");
-      button.setAttribute("class", "dropdown-link zip-" + name);
+      li.classList.add("rot13-button");
+      var button = document.createElement("button");
       li.appendChild(button);
-      button.appendChild(new Text(name));
-      this.element.querySelector(".dropdown-menu > ul").appendChild(li);
-      button.addEventListener("click", onClick);
+      button.setAttribute("role", "menuitem");
+      button.setAttribute("class", "dropdown-link");
+      button.innerText = "rot13 " + this.dancerId;
+      this.li = li;
+      this.button = button;
+    },
+    attach: function () {
+      // Purge
+      this.detach();
+
+      this.getMenu().appendChild(this.li);
+      this.button.addEventListener('click', this.click.bind(this));
+    },
+    detach: function () {
+      var rot13 = this.element.closest(".tweet").querySelector(".rot13");
+      if (rot13) rot13.remove();
+      var li = this.getMenu().querySelector("li.rot13-button");
+      if (li) li.remove();
+    },
+    click: function () {
+      var rot13elem = this.element.closest(".tweet").querySelector(".rot13");
+      if (rot13elem) {
+        rot13elem.remove();
+      } else {
+        rot13.rot13tweet(this.element.closest(".tweet"));
+      }
+    },
+    getMenu: function () {
+      return this.element.querySelector("div.dropdown > div.dropdown-menu > ul");
     }
+  });
+  Dancer.observe(document.body);
 
-    static of(element) {
-      return componentRegistry.get(element) || new Tweet(element);
-    }
-  }
-
-  class Stream extends Component {
-    static of(element) {
-      return componentRegistry.get(element) || new Stream(element);
-    }
-  }
-
-  class StreamItem extends Component {
-    static of(element) {
-      return componentRegistry.get(element) || new StreamItem(element);
-    }
-  }
-
-  mappings = {
-    "AppContent": Stream,
-    "js-stream-item": StreamItem,
-    "js-actionable-tweet": Tweet
-  };
-
-  Stream.of(document.querySelector(`.${rootNode}`));
 }).call(this);

@@ -13,7 +13,7 @@ module.exports = (() => {
   }
 
   function rot13tweet(tweet) {
-    let tweetText = tweet.element.querySelector(".tweet-text");
+    let tweetText = tweet.querySelector(".tweet-text");
     let clone = tweetText.cloneNode(true);
     for (let node of clone.childNodes.iterator) {
       if (node.nodeType == Node.TEXT_NODE) {
@@ -21,24 +21,12 @@ module.exports = (() => {
       }
     }
     clone.classList.add("rot13");
+    tweetText.parentNode.insertBefore(clone, tweetText);
     return clone;
   }
 
-  function attach(tweet) {
-    let clone = null;
-    tweet.addButton("rot13", () => {
-      let content = tweet.element.querySelector(".content");
-      if (clone) {
-        content.removeChild(clone);
-        clone = null;
-      } else {
-        clone = rot13tweet(tweet);
-        content.insertBefore(clone, tweet.element.querySelector(".tweet-text"));
-      }
-    });
-  }
-
   return {
-    attach
+    rot13,
+    rot13tweet
   };
 })();
