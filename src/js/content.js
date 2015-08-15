@@ -19,7 +19,7 @@
       li.appendChild(button);
       button.setAttribute("role", "menuitem");
       button.setAttribute("class", "dropdown-link");
-      button.innerText = "rot13 " + this.dancerId;
+      button.innerText = "rot13";
       this.li = li;
       this.button = button;
     },
