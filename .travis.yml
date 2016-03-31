@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "5.2"
+
+install:
+  - npm install
+
+build:
+  - npm run build
+  - zip -r dist.zip dist/
