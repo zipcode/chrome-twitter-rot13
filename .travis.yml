@@ -1,22 +1,17 @@
 language: node_js
 node_js:
-- '5.2'
-
-before_install:
-- openssl aes-256-cbc -K $encrypted_ff88c3245225_key -iv $encrypted_ff88c3245225_iv
-  -in privatekey.pem.enc -out privatekey.pem -d
+  - "5.2"
 
 install:
-- npm install
+  - npm install
 
 script:
-- npm run build
+  - npm run build
 
 after_success:
-- zip -r dist.zip dist/
-- ./buildcrx.sh ./dist ./privatekey.pem
+  - zip -r dist.zip dist/
 
 addons:
   artifacts:
     paths:
-    - dist.crx
+      - dist.zip
